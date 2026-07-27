@@ -62,7 +62,7 @@ curl 'http://127.0.0.1:8888/__dev/jwt?agent=jwt'
 ```bash
 curl -N http://127.0.0.1:8888/both/ \
   -H 'X-HW-ID: hw-id-003' -H 'X-HW-APPKEY: hw-key-003' -H 'Content-Type: application/json' \
-  -d '{"jsonrpc":"2.0","id":"1","method":"message/stream","params":{"message":{"role":"user","parts":[{"text":"check the total number of security alarms"}]}}}'
+  -d '{"jsonrpc":"2.0","id":"1","method":"message/stream","params":{"message":{"messageId":"msg-1","role":"ROLE_USER","parts":[{"text":"check the total number of security alarms"}]}}}'
 ```
 SSE 收到:`statusUpdate(TASK_STATE_WORKING)` → `artifactUpdate`(告警 mock 数据,`lastChunk`)→ `statusUpdate(TASK_STATE_COMPLETED)`。
 
@@ -70,7 +70,7 @@ SSE 收到:`statusUpdate(TASK_STATE_WORKING)` → `artifactUpdate`(告警 mock �
 ```bash
 curl http://127.0.0.1:8888/both/ \
   -H 'X-HW-ID: hw-id-003' -H 'X-HW-APPKEY: hw-key-003' -H 'Content-Type: application/json' \
-  -d '{"jsonrpc":"2.0","id":"2","method":"message/send","params":{"message":{"role":"user","parts":[{"text":"check pedestrian flow at each entrance"}]}}}'
+  -d '{"jsonrpc":"2.0","id":"2","method":"message/send","params":{"message":{"messageId":"msg-2","role":"ROLE_USER","parts":[{"text":"check pedestrian flow at each entrance"}]}}}'
 ```
 
 **6) 浏览器预览三张 card(免认证)**
