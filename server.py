@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-A2A v1.0.0 mock server behind a Huawei API-Gateway style auth layer — DataQuery Agent.
+A2A v1.0.0 mock server behind an API-Gateway style auth layer — DataQuery Agent.
 
 Three agent endpoints, each advertising different security schemes:
   - idkey : only X-HW-ID + X-HW-APPKEY   (AppID + AppKey)
@@ -174,14 +174,14 @@ def build_agent_card(agent_key: str) -> dict:
     modes = agent["modes"]
     schemes = {
         "hwId": _api_key_scheme(
-            "X-HW-ID", "Huawei API-Gateway App ID (identity, required by every mode)."),
+            "X-HW-ID", "API-Gateway App ID (identity, required by every mode)."),
     }
     if "appkey" in modes:
         schemes["hwAppKey"] = _api_key_scheme(
-            "X-HW-APPKEY", "Huawei API-Gateway AppKey credential (paired with X-HW-ID).")
+            "X-HW-APPKEY", "API-Gateway AppKey credential (paired with X-HW-ID).")
     if "jwt" in modes:
         schemes["hwBearerJwt"] = _http_bearer_scheme(
-            "Huawei API-Gateway JWT credential (paired with X-HW-ID).")
+            "API-Gateway JWT credential (paired with X-HW-ID).")
 
     requirements = []
     if "appkey" in modes:
@@ -250,7 +250,7 @@ def build_cards_html() -> str:
         '<title>DataQuery Agent · A2A Cards</title>',
         '<style>', _CARDS_HTML_CSS, '</style></head><body><div class="wrap">',
         '<h1>DataQuery Agent · A2A v1.0 Mock</h1>',
-        '<div class="sub">华为 API-Gateway 前置 · 三个认证变体 · campus 数据查询(安全告警 / 人流统计)'
+        '<div class="sub">API-Gateway 前置 · 三个认证变体 · campus 数据查询(安全告警 / 人流统计)'
         '。本页为免认证开发预览;实际接口需 X-HW 认证。</div>',
     ]
     out.append('<div class="legend">' + ''.join(
@@ -276,7 +276,7 @@ def build_cards_html() -> str:
         '<div class="hint"><b>说明:</b> 三个变体唯一差异在 <code>securitySchemes</code> / '
         '<code>securityRequirements</code>(idkey 仅 AppKey、jwt 仅 Bearer JWT、both 二者皆可)。'
         '查询关键词含 alarm/security → 返回安全告警 mock;含 pedestrian/flow/出入口 → 返回人流统计 mock;否则返回空结果。'
-        '<br>认证失败返回 <code>{"status":401,"source":"Huawei API-Gateway",...,"message":"Authorzation failed"}</code>。'
+        '<br>认证失败返回 <code>{"status":401,"source":"API-Gateway",...,"message":"Authorzation failed"}</code>。'
         '测试 JWT:<code>GET /__dev/jwt?agent=jwt</code>。</div>'
     )
     out.append('</div></body></html>')
@@ -383,9 +383,9 @@ def build_send_result(rpc_id, task_id: str, context_id: str, query: str) -> dict
 # --------------------------------------------------------------------------
 # HTTP handler
 # --------------------------------------------------------------------------
-HUAWEI_401_BODY = {
+GATEWAY_401_BODY = {
     "status": 401,
-    "source": "Huawei API-Gateway",
+    "source": "API-Gateway",
     "message": "Authorzation failed",  # spelling kept as specified
 }
 
@@ -413,8 +413,8 @@ class A2AMockHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _huawei_401(self):
-        body = dict(HUAWEI_401_BODY)
+    def _gateway_401(self):
+        body = dict(GATEWAY_401_BODY)
         body["time"] = time.strftime("%Y-%m-%d %H:%M:%S")
         self._write_json(401, body)
 
@@ -449,7 +449,7 @@ class A2AMockHandler(BaseHTTPRequestHandler):
         if route != "card" or agent_key not in AGENTS:
             return self._write_json(404, {"error": "not found"})
         if not authenticate(agent_key, self.headers):
-            return self._huawei_401()
+            return self._gateway_401()
         return self._write_json(200, build_agent_card(agent_key))
 
     def do_POST(self):
@@ -457,7 +457,7 @@ class A2AMockHandler(BaseHTTPRequestHandler):
         if route != "rpc" or agent_key not in AGENTS:
             return self._write_json(404, {"error": "not found"})
         if not authenticate(agent_key, self.headers):
-            return self._huawei_401()
+            return self._gateway_401()
 
         length = int(self.headers.get("Content-Length", 0) or 0)
         raw = self.rfile.read(length) if length else b"{}"
@@ -515,7 +515,7 @@ class A2AMockHandler(BaseHTTPRequestHandler):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="A2A v1.0 DataQuery mock behind Huawei API-Gateway auth.")
+        description="A2A v1.0 DataQuery mock behind API-Gateway auth.")
     parser.add_argument("--host", default=HOST, help="bind address (default 0.0.0.0)")
     parser.add_argument("--port", type=int, default=PORT, help="listen port (default 8888)")
     parser.add_argument(
@@ -533,7 +533,7 @@ def main():
         BASE_URL = f"http://{display}:{args.port}"
 
     server = ThreadingHTTPServer((args.host, args.port), A2AMockHandler)
-    print(f"A2A v1.0 DataQuery mock (Huawei-gateway auth) on http://{args.host}:{args.port}")
+    print(f"A2A v1.0 DataQuery mock (API-Gateway auth) on http://{args.host}:{args.port}")
     print(f"Card advertised base URL: {BASE_URL}")
     print("Agents / demo credentials:")
     for key, a in AGENTS.items():
