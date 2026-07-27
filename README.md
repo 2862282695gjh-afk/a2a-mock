@@ -81,7 +81,7 @@ http://127.0.0.1:8888/__dev/cards.html
 ## A2A v1.0 合规要点
 
 - `securitySchemes` 是 proto oneof:`{apiKeySecurityScheme:{location,name,description}}` / `{httpAuthSecurityScheme:{scheme,bearerFormat,description}}`(用 `location`,不是 `in`)。
-- `securityRequirements`:`[{schemes:{name:{list:[]}}}]`(`list` = OAuth scopes,apiKey/bearer 恒空)。
+- `securityRequirements`:`[{"schemes":{"name":{"list":[]}}}]`(`"list"` = OAuth scopes,apiKey/bearer 恒空)。
 - `message/stream` 返回 SSE,每条 `data:` = JSON-RPC 包裹 `StreamResponse`(`statusUpdate`/`artifactUpdate`,`lastChunk`,带 `contextId`)。
 - `TaskState` 用 ProtoJSON 完整名:`TASK_STATE_WORKING` / `TASK_STATE_COMPLETED`(见 ADR-001)。
 - `--url` 控制 card 里 advertised 的 base URL(默认 localhost);部署到服务器/域名时设成外部可达地址,让 `supportedInterfaces[].url` 与实际访问地址对应。
