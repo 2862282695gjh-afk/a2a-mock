@@ -472,13 +472,15 @@ class A2AMockHandler(BaseHTTPRequestHandler):
         task_id = str(uuid.uuid4())
         context_id = str(uuid.uuid4())
 
-        if method == "message/stream":
+        # A2A v1.0 JSON-RPC methods (PascalCase proto RPC names).
+        if method == "SendStreamingMessage":
             return self._send_stream(rpc_id, task_id, context_id, query)
-        if method == "message/send":
+        if method == "SendMessage":
             return self._write_json(200, build_send_result(rpc_id, task_id, context_id, query))
-        if method in ("tasks/sendSubscribe",):
+        # Backwards/alt compatibility: REST-style paths and v0.x names.
+        if method in ("message/stream", "tasks/sendSubscribe"):
             return self._send_stream(rpc_id, task_id, context_id, query)
-        if method in ("tasks/send",):
+        if method in ("message/send", "tasks/send"):
             return self._write_json(200, build_send_result(rpc_id, task_id, context_id, query))
 
         return self._write_json(200, _rpc_error(rpc_id, -32601, f"Method not found: {method}"))
