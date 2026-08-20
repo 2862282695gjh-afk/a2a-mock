@@ -24,13 +24,49 @@ agent 是 **DataQuery**(campus 数据查询),不调用大模型,按查询关键�
 
 ## 模型实例校验(必须携带 model id)
 
-所有 JSON-RPC method 的 `params.metadata.model` **必填**,且必须是已知模型(当前白名单:`MasS-DeepSeek-V4-Flash`)。缺失或未知时返回:
-```json
-{"error":{"code": -32602,"message":"模型实例找不到。"},"id":"请求体中的id","jsonrpc":"2.0"}
+所有 JSON-RPC method 的 `params.metadata.model` **必填**,且必须是已知模型(当前白名单:`MasS-DeepSeek-V4-Flash`)。所有 method 一视同仁——`SendMessage`、`SendStreamingMessage`,以及 v0.x 别名 `message/send`、`message/stream`,缺 model 或 model 不在白名单都会被拒。白名单定义在 `server.py` 的 `KNOWN_MODELS`。
+
+### ✅ 成功调用示例(带 model)
+
+请求(非流式 `SendMessage`):
+```bash
+curl -X POST http://localhost:8888/idkey \
+  -H "X-HW-ID: hw-id-001" -H "X-HW-APPKEY: hw-key-001" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 10,
+    "method": "SendMessage",
+    "params": {
+      "message": {"parts": [{"text": "查询人流"}]},
+      "metadata": {"model": "MasS-DeepSeek-V4-Flash"}
+    }
+  }'
 ```
-请求示例(带 model):
+响应(HTTP 200,正常返回 task):
 ```json
-{"jsonrpc":"2.0","id":1,"method":"SendStreamingMessage","params":{"message":{"parts":[{"text":"查询安全告警"}]},"metadata":{"model":"MasS-DeepSeek-V4-Flash"}}}
+{"jsonrpc": "2.0", "id": 10, "result": {"task": {"id": "...", "contextId": "...", "status": {"state": "TASK_STATE_COMPLETED", "timestamp": "..."}, "artifacts": [...]}}}
+```
+
+流式 `SendStreamingMessage` 同理,`params` 结构一样(返回 SSE:`TASK_STATE_WORKING` → `artifactUpdate` → `TASK_STATE_COMPLETED`)。
+
+### ❌ 失败示例(缺 model)
+
+请求(没带 `metadata`):
+```bash
+curl -X POST http://localhost:8888/idkey \
+  -H "X-HW-ID: hw-id-001" -H "X-HW-APPKEY: hw-key-001" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 7,
+    "method": "SendMessage",
+    "params": {"message": {"parts": [{"text": "查询安全告警"}]}}
+  }'
+```
+响应(HTTP 200,JSON-RPC 错误,`id` 回填请求体中的 id;model 不在白名单时同样返回):
+```json
+{"jsonrpc": "2.0", "id": 7, "error": {"code": -32602, "message": "模型实例找不到。"}}
 ```
 
 ## DataQuery 返回(按查询关键词 mock)
