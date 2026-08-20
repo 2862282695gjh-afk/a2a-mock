@@ -371,7 +371,15 @@ def build_stream_events(rpc_id, task_id: str, context_id: str, query: str):
     yield _rpc_ok(rpc_id, {"statusUpdate": {
         "taskId": task_id,
         "contextId": context_id,
-        "status": {"state": "TASK_STATE_COMPLETED", "timestamp": _ts()},
+        "status": {
+            "state": "TASK_STATE_COMPLETED",
+            "timestamp": _ts(),
+            "message": {
+                "messageId": f"msg-{task_id}",
+                "role": "ROLE_AGENT",
+                "parts": [{"text": summary_text, "mediaType": "text/plain"}],
+            },
+        },
     }})
 
 
@@ -381,7 +389,15 @@ def build_send_result(rpc_id, task_id: str, context_id: str, query: str) -> dict
     return _rpc_ok(rpc_id, {"task": {
         "id": task_id,
         "contextId": context_id,
-        "status": {"state": "TASK_STATE_COMPLETED", "timestamp": _ts()},
+        "status": {
+            "state": "TASK_STATE_COMPLETED",
+            "timestamp": _ts(),
+            "message": {
+                "messageId": f"msg-{task_id}",
+                "role": "ROLE_AGENT",
+                "parts": [{"text": summary_text, "mediaType": "text/plain"}],
+            },
+        },
         "artifacts": [_query_artifact(summary_text, data)],
     }})
 
