@@ -15,11 +15,22 @@ agent 是 **DataQuery**(campus 数据查询),不调用大模型,按查询关键�
 
 两个端点(均需认证):
 - `GET /{agent}/.well-known/agent-card.json` — agent 卡片(`securitySchemes` / `supportedInterfaces`)
-- `POST /{agent}` — JSON-RPC 端点(`message/send` 同步、`message/stream` SSE 流)
+- `POST /{agent}` — JSON-RPC 端点(`SendMessage` 同步、`SendStreamingMessage` SSE 流;兼容 v0.x 的 `message/send` / `message/stream`)
 
 认证失败(缺/错凭据)统一返回 API-Gateway 网关格式:
 ```json
 {"status":401,"source":"API-Gateway","time":"2026-07-27 14:19:03","message":"Authorzation failed"}
+```
+
+## 模型实例校验(必须携带 model id)
+
+所有 JSON-RPC method 的 `params.metadata.model` **必填**,且必须是已知模型(当前白名单:`MasS-DeepSeek-V4-Flash`)。缺失或未知时返回:
+```json
+{"error":{"code": -32602,"message":"模型实例找不到。"},"id":"请求体中的id","jsonrpc":"2.0"}
+```
+请求示例(带 model):
+```json
+{"jsonrpc":"2.0","id":1,"method":"SendStreamingMessage","params":{"message":{"parts":[{"text":"查询安全告警"}]},"metadata":{"model":"MasS-DeepSeek-V4-Flash"}}}
 ```
 
 ## DataQuery 返回(按查询关键词 mock)
