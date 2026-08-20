@@ -38,7 +38,11 @@ curl -X POST http://localhost:8888/idkey \
     "id": 10,
     "method": "SendMessage",
     "params": {
-      "message": {"parts": [{"text": "查询人流"}]},
+      "message": {
+        "messageId": "msg-001",
+        "role": "ROLE_USER",
+        "parts": [{"text": "查询人流"}]
+      },
       "metadata": {"model": "MasS-DeepSeek-V4-Flash"}
     }
   }'
@@ -52,7 +56,7 @@ curl -X POST http://localhost:8888/idkey \
 
 ### ❌ 失败示例(缺 model)
 
-请求(没带 `metadata`):
+请求(没带 `metadata`,message 本身是完整规范的):
 ```bash
 curl -X POST http://localhost:8888/idkey \
   -H "X-HW-ID: hw-id-001" -H "X-HW-APPKEY: hw-key-001" \
@@ -61,7 +65,13 @@ curl -X POST http://localhost:8888/idkey \
     "jsonrpc": "2.0",
     "id": 7,
     "method": "SendMessage",
-    "params": {"message": {"parts": [{"text": "查询安全告警"}]}}
+    "params": {
+      "message": {
+        "messageId": "msg-002",
+        "role": "ROLE_USER",
+        "parts": [{"text": "查询安全告警"}]
+      }
+    }
   }'
 ```
 响应(HTTP 200,JSON-RPC 错误,`id` 回填请求体中的 id;model 不在白名单时同样返回):
