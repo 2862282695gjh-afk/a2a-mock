@@ -24,7 +24,7 @@ agent 是 **DataQuery**(campus 数据查询),不调用大模型,按查询关键�
 
 ## 模型实例校验(必须携带 model id)
 
-所有 JSON-RPC method 的 `params.metadata.model` **必填**,且必须是已知模型(当前白名单:`MasS-DeepSeek-V4-Flash`)。所有 method 一视同仁——`SendMessage`、`SendStreamingMessage`,以及 v0.x 别名 `message/send`、`message/stream`,缺 model 或 model 不在白名单都会被拒。白名单定义在 `server.py` 的 `KNOWN_MODELS`。
+所有 JSON-RPC method 的 `params.message.metadata.model` **必填**,且必须是已知模型(当前白名单:`MasS-DeepSeek-V4-Flash`)。所有 method 一视同仁——`SendMessage`、`SendStreamingMessage`,以及 v0.x 别名 `message/send`、`message/stream`,缺 model 或 model 不在白名单都会被拒。白名单定义在 `server.py` 的 `KNOWN_MODELS`。
 
 ### ✅ 成功调用示例(带 model)
 
@@ -41,9 +41,9 @@ curl -X POST http://localhost:8888/idkey \
       "message": {
         "messageId": "msg-001",
         "role": "ROLE_USER",
-        "parts": [{"text": "查询人流"}]
-      },
-      "metadata": {"model": "MasS-DeepSeek-V4-Flash"}
+        "parts": [{"text": "查询人流"}],
+        "metadata": {"model": "MasS-DeepSeek-V4-Flash"}
+      }
     }
   }'
 ```
@@ -56,7 +56,7 @@ curl -X POST http://localhost:8888/idkey \
 
 ### ❌ 失败示例(缺 model)
 
-请求(没带 `metadata`,message 本身是完整规范的):
+请求(message 里没带 `metadata`,其余字段完整规范):
 ```bash
 curl -X POST http://localhost:8888/idkey \
   -H "X-HW-ID: hw-id-001" -H "X-HW-APPKEY: hw-key-001" \

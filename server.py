@@ -41,8 +41,8 @@ BASE_URL = f"http://127.0.0.1:{PORT}"
 JWT_SECRET = "hw-mock-jwt-secret"
 JWT_TTL = 3600  # seconds
 
-# Known model instances. Requests must carry params.metadata.model and it
-# must be one of these; otherwise JSON-RPC error -32602 "模型实例找不到。".
+# Known model instances. Requests must carry params.message.metadata.model
+# and it must be one of these; otherwise JSON-RPC error -32602 "模型实例找不到。".
 KNOWN_MODELS = {
     "MasS-DeepSeek-V4-Flash",
 }
@@ -476,9 +476,10 @@ class A2AMockHandler(BaseHTTPRequestHandler):
         method = rpc.get("method")
         query = self._extract_query(rpc)
 
-        # Model instance check: params.metadata.model is required by every
-        # method. Missing/unknown model -> JSON-RPC error -32602.
-        model = ((rpc.get("params") or {}).get("metadata") or {}).get("model")
+        # Model instance check: params.message.metadata.model is required by
+        # every method. Missing/unknown model -> JSON-RPC error -32602.
+        params = rpc.get("params") or {}
+        model = ((params.get("message") or {}).get("metadata") or {}).get("model")
         if not model or model not in KNOWN_MODELS:
             return self._write_json(200, _rpc_error(rpc_id, -32602, "模型实例找不到。"))
 
