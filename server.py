@@ -68,18 +68,18 @@ AGENTS = {
         "modes": ["appkey"],
         "x_hw_id": "hw-id-001",
         "appkey": "hw-key-001",
-        "name": "DataQuery Agent (AppKey auth)",
+        "name": "DataQuery_AppKey_Agent",
     },
     "jwt": {
         "modes": ["jwt"],
         "x_hw_id": "hw-id-002",
-        "name": "DataQuery Agent (JWT auth)",
+        "name": "DataQuery_JWT_Agent",
     },
     "both": {
         "modes": ["appkey", "jwt"],
         "x_hw_id": "hw-id-003",
         "appkey": "hw-key-003",
-        "name": "DataQuery Agent (AppKey or JWT)",
+        "name": "DataQuery_Both_Agent",
     },
 }
 
